@@ -1,10 +1,6 @@
 package com.takipi.oss.benchmarks.jmh.loops;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -26,7 +22,7 @@ public class LoopBenchmarkMain {
 	public static void main(String[] args) {
 		LoopBenchmarkMain benchmark = new LoopBenchmarkMain();
 		benchmark.setup();
-		
+
 		System.out.println("iteratorMaxInteger max is: " + benchmark.iteratorMaxInteger());
 		System.out.println("forEachLoopMaxInteger max is: " + benchmark.forEachLoopMaxInteger());
 		System.out.println("forEachLambdaMaxInteger max is: " + benchmark.forEachLambdaMaxInteger());
@@ -35,7 +31,7 @@ public class LoopBenchmarkMain {
 		System.out.println("streamMaxInteger max is: " + benchmark.streamMaxInteger());
 		System.out.println("iteratorMaxInteger max is: " + benchmark.lambdaMaxInteger());
 	}
-	
+
 	@Setup
 	public void setup() {
 		integers = new ArrayList<Integer>(size);
@@ -76,7 +72,7 @@ public class LoopBenchmarkMain {
 		}
 		return max;
 	}
-	
+
 	@Benchmark
 	@BenchmarkMode(Mode.AverageTime)
 	@OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -86,20 +82,20 @@ public class LoopBenchmarkMain {
 	public int forEachLambdaMaxInteger() {
 		final Wrapper wrapper = new Wrapper();
 		wrapper.inner = Integer.MIN_VALUE;
-		
+
 		integers.forEach(i -> helper(i, wrapper));
 		return wrapper.inner.intValue();
 	}
-	
+
 	public static class Wrapper {
-		public Integer inner; 
+		public Integer inner;
 	}
-	
+
 	private int helper(int i, Wrapper wrapper) {
 		wrapper.inner = Math.max(i, wrapper.inner);
 		return wrapper.inner;
 	}
-	
+
 	@Benchmark
 	@BenchmarkMode(Mode.AverageTime)
 	@OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -135,7 +131,18 @@ public class LoopBenchmarkMain {
 		Optional<Integer> max = integers.stream().reduce(Integer::max);
 		return max.get();
 	}
-	
+
+	@Benchmark
+	@BenchmarkMode(Mode.AverageTime)
+	@OutputTimeUnit(TimeUnit.MILLISECONDS)
+	@Fork(2)
+	@Measurement(iterations = 5)
+	@Warmup(iterations = 5)
+	public int intStreamMaxInteger() {
+		OptionalInt max = integers.stream().mapToInt(Integer::intValue).max();
+		return max.getAsInt();
+	}
+
 	@Benchmark
 	@BenchmarkMode(Mode.AverageTime)
 	@OutputTimeUnit(TimeUnit.MILLISECONDS)
